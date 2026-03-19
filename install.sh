@@ -32,6 +32,21 @@ fi
 # Fall back to apt (ansible-core only, older version but zero-dep).
 # Last resort: pip --break-system-packages (explicit opt-in).
 
+_pipx_add_to_zshrc() {
+  local pipx_bin="$HOME/.local/bin"
+  # Add to .zshrc if zsh is in use and the line isn't already there
+  if [[ -f "$HOME/.zshrc" ]] && ! grep -q 'local/bin' "$HOME/.zshrc" 2>/dev/null; then
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.zshrc"
+    info "Added ~/.local/bin to ~/.zshrc"
+  fi
+  # Also patch .bashrc in case the user switches shells
+  if [[ -f "$HOME/.bashrc" ]] && ! grep -q 'local/bin' "$HOME/.bashrc" 2>/dev/null; then
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
+  fi
+  # Make it available right now in the current session
+  export PATH="$pipx_bin:$PATH"
+}
+
 install_via_pipx() {
   info "Installing Ansible via pipx..."
   if ! command -v pipx &>/dev/null; then
@@ -43,10 +58,10 @@ install_via_pipx() {
     export PATH="$PATH:$HOME/.local/bin"
   fi
   pipx install --include-deps ansible
-  # Expose ansible* binaries to the current shell
-  pipx ensurepath
+  # pipx ensurepath only updates .bashrc — also patch .zshrc if present
+  pipx ensurepath --force 2>/dev/null || true
+  _pipx_add_to_zshrc
   success "Ansible installed via pipx."
-  info "Restart your shell or run:  source ~/.bashrc  (or ~/.zshrc)"
 }
 
 install_via_apt() {
@@ -90,5 +105,11 @@ if command -v ansible &>/dev/null; then
   echo "    ansible-playbook site.yml -i \"localhost,\" --connection local"
 else
   warn "ansible binary not found in current PATH."
-  warn "If you used pipx, restart your shell or run: source ~/.bashrc"
+  echo ""
+  echo "  Fix for zsh (run now, permanent after shell restart):"
+  echo -e "    ${CYAN}export PATH=\"\$HOME/.local/bin:\$PATH\"${NC}"
+  echo ""
+  echo "  Or reload your config:"
+  echo "    source ~/.zshrc   # if using zsh"
+  echo "    source ~/.bashrc  # if using bash"
 fi
