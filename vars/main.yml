@@ -1,11 +1,12 @@
 ---
 # Target user for shell setup
-shell_user: "{{ ansible_user }}"
-shell_user_home: "{{ '/root' if shell_user == 'root' else '/home/' + shell_user }}"
+shell_user: "{{ ansible_user | default(lookup('env', 'USER')) }}"
+shell_user_home: "{{ '/Users/' + shell_user if ansible_facts['os_family'] == 'Darwin' else '/root' if shell_user == 'root' else '/home/' + shell_user }}"
 
 # Oh My Zsh
 omz_install_dir: "{{ shell_user_home }}/.oh-my-zsh"
 omz_theme: "powerlevel10k/powerlevel10k"
+zdotdir: "{{ shell_user_home }}/.config/zshrc"
 
 # Plugins to enable in OMZ
 omz_plugins:

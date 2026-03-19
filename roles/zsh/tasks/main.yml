@@ -1,18 +1,26 @@
 ---
-- name: Get shell_user uid
+- name: Get shell_user uid (Debian)
   ansible.builtin.getent:
     database: passwd
     key: "{{ shell_user }}"
+  when: ansible_facts['os_family'] == "Debian"
+
+- name: Get shell_user uid (macOS)
+  ansible.builtin.command: id -u "{{ shell_user }}"
+  register: macos_uid
+  changed_when: false
+  when: ansible_facts['os_family'] == "Darwin"
 
 - name: Set zsh as default shell
   ansible.builtin.user:
     name: "{{ shell_user }}"
     shell: /bin/zsh
+  become: true
 
 - name: Ensure .config directory exists
   ansible.builtin.file:
     path: "{{ shell_user_home }}/.config"
     state: directory
     owner: "{{ shell_user }}"
-    group: "{{ shell_user }}"
+    group: "{{ 'staff' if ansible_facts['os_family'] == 'Darwin' else shell_user }}"
     mode: "0755"

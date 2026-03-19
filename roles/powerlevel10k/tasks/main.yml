@@ -9,11 +9,12 @@
   become_user: "{{ shell_user }}"
 
 # ─── MesloLGS NF — smart detection before downloading ─────────────────────────
-- name: Check if MesloLGS NF fonts are already registered in fontconfig
+- name: Check if MesloLGS NF fonts are already registered in fontconfig (Debian)
   ansible.builtin.command: fc-list "MesloLGS NF"
   register: meslolgs_fc_list
   changed_when: false
   failed_when: false
+  when: ansible_facts['os_family'] == "Debian"
 
 - name: Check individual font files on disk
   ansible.builtin.stat:
@@ -37,54 +38,69 @@
     path: "{{ nerd_fonts_dir }}"
     state: directory
     owner: "{{ shell_user }}"
-    group: "{{ shell_user }}"
+    group: "{{ 'staff' if ansible_facts['os_family'] == 'Darwin' else shell_user }}"
     mode: "0755"
-  when: missing_fonts | length > 0 or meslolgs_fc_list.stdout == ""
+  when: missing_fonts | length > 0 or (meslolgs_fc_list.stdout is defined and meslolgs_fc_list.stdout == "")
 
-- name: "Download missing MesloLGS NF font files ({{ missing_fonts | length }} file(s))"
+- name: "Download missing MesloLGS NF font files"
   ansible.builtin.get_url:
     url: "{{ item.url }}"
     dest: "{{ nerd_fonts_dir }}/{{ item.name }}"
     checksum: "{{ item.checksum | default(omit) }}"
     owner: "{{ shell_user }}"
-    group: "{{ shell_user }}"
+    group: "{{ 'staff' if ansible_facts['os_family'] == 'Darwin' else shell_user }}"
     mode: "0644"
     timeout: 30
   loop: "{{ missing_fonts }}"
   register: fonts_downloaded
-  notify: Refresh font cache
   when: missing_fonts | length > 0
 
-- name: Refresh font cache (fc-cache) — only if new fonts were downloaded
+- name: Refresh font cache (fc-cache) — Debian only
   ansible.builtin.command: fc-cache -fv "{{ nerd_fonts_dir }}"
   become: true
   become_user: "{{ shell_user }}"
   changed_when: true
   when:
+    - ansible_facts['os_family'] == "Debian"
     - fonts_downloaded is defined
     - fonts_downloaded.changed | default(false)
 
-- name: Verify MesloLGS NF is now detected by fontconfig
+- name: Verify MesloLGS NF is detected by fontconfig (Debian only)
   ansible.builtin.command: fc-list "MesloLGS NF"
   register: fc_verify
   changed_when: false
   failed_when: fc_verify.stdout == "" and missing_fonts | length > 0
+  when: ansible_facts['os_family'] == "Debian"
 
-# ─── Detect primary network interface via Ansible facts ────────────────────────
+# ─── Detect primary network interface ─────────────────────────────────────────
 - name: Detect default IPv4 interface from Ansible facts
   ansible.builtin.set_fact:
-    p10k_ip_interface: "{{ ansible_default_ipv4.interface | default('') }}"
-  when: ansible_default_ipv4 is defined and ansible_default_ipv4.interface is defined
+    p10k_ip_interface: "{{ ansible_facts['default_ipv4']['interface'] | default('') }}"
+  when:
+    - "'default_ipv4' in ansible_facts"
+    - "'interface' in ansible_facts['default_ipv4']"
 
-- name: Fall back to ip-route when ansible_default_ipv4 is unavailable
+- name: Fall back to ip-route when ansible_default_ipv4 is unavailable (Debian)
   ansible.builtin.shell: |
     ip route show default 2>/dev/null | awk '/^default/{print $5; exit}'
   register: ip_route_iface
   changed_when: false
   failed_when: false
-  when: p10k_ip_interface is not defined or p10k_ip_interface == ""
+  when:
+    - ansible_facts['os_family'] == "Debian"
+    - p10k_ip_interface is not defined or p10k_ip_interface == ""
 
-- name: Set p10k_ip_interface from ip-route fallback
+- name: Fall back to route on macOS
+  ansible.builtin.shell: |
+    route -n get default 2>/dev/null | awk '/interface:/{print $2; exit}'
+  register: ip_route_iface
+  changed_when: false
+  failed_when: false
+  when:
+    - ansible_facts['os_family'] == "Darwin"
+    - p10k_ip_interface is not defined or p10k_ip_interface == ""
+
+- name: Set p10k_ip_interface from fallback
   ansible.builtin.set_fact:
     p10k_ip_interface: "{{ ip_route_iface.stdout | trim }}"
   when:
@@ -101,11 +117,11 @@
   ansible.builtin.debug:
     msg: "Primary network interface resolved to: {{ p10k_ip_interface }}"
 
-# ─── Deploy p10k config ───────────────────────────────────────────────────────
+# ─── Deploy p10k config ────────────────────────────────────────────────────────
 - name: Deploy p10k config
   ansible.builtin.template:
     src: p10k.zsh.j2
-    dest: "{{ shell_user_home }}/.p10k.zsh"
+    dest: "{{ zdotdir }}/.p10k.zsh"
     owner: "{{ shell_user }}"
-    group: "{{ shell_user }}"
+    group: "{{ 'staff' if ansible_facts['os_family'] == 'Darwin' else shell_user }}"
     mode: "0644"

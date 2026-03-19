@@ -2,32 +2,32 @@
 - name: Deploy .zshrc
   ansible.builtin.template:
     src: zshrc.j2
-    dest: "{{ shell_user_home }}/.zshrc"
+    dest: "{{ zdotdir }}/.zshrc"
     owner: "{{ shell_user }}"
-    group: "{{ shell_user }}"
+    group: "{{ 'staff' if ansible_facts['os_family'] == 'Darwin' else shell_user }}"
     mode: "0644"
     backup: true
 
 - name: Deploy aliases file
   ansible.builtin.template:
     src: aliases.zsh.j2
-    dest: "{{ shell_user_home }}/.aliases.zsh"
+    dest: "{{ zdotdir }}/.aliases.zsh"
     owner: "{{ shell_user }}"
-    group: "{{ shell_user }}"
+    group: "{{ 'staff' if ansible_facts['os_family'] == 'Darwin' else shell_user }}"
     mode: "0644"
 
 - name: Deploy functions file
   ansible.builtin.template:
     src: functions.zsh.j2
-    dest: "{{ shell_user_home }}/.functions.zsh"
+    dest: "{{ zdotdir }}/.functions.zsh"
     owner: "{{ shell_user }}"
-    group: "{{ shell_user }}"
+    group: "{{ 'staff' if ansible_facts['os_family'] == 'Darwin' else shell_user }}"
     mode: "0644"
 
 - name: Deploy exports file
   ansible.builtin.template:
     src: exports.zsh.j2
-    dest: "{{ shell_user_home }}/.exports.zsh"
+    dest: "{{ zdotdir }}/.exports.zsh"
     owner: "{{ shell_user }}"
-    group: "{{ shell_user }}"
+    group: "{{ 'staff' if ansible_facts['os_family'] == 'Darwin' else shell_user }}"
     mode: "0644"

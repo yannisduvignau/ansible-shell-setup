@@ -21,13 +21,13 @@ plugins=({{ omz_plugins | join(' ') }})
 source "$ZSH/oh-my-zsh.sh"
 
 # ── Variables d'environnement ─────────────────────────────────────────────────
-[[ -f ~/.exports.zsh ]] && source ~/.exports.zsh
+[[ -f ${ZDOTDIR:-$HOME}/.exports.zsh ]] && source ${ZDOTDIR:-$HOME}/.exports.zsh
 
 # ── Aliases ───────────────────────────────────────────────────────────────────
-[[ -f ~/.aliases.zsh ]] && source ~/.aliases.zsh
+[[ -f ${ZDOTDIR:-$HOME}/.aliases.zsh ]] && source ${ZDOTDIR:-$HOME}/.aliases.zsh
 
 # ── Fonctions ─────────────────────────────────────────────────────────────────
-[[ -f ~/.functions.zsh ]] && source ~/.functions.zsh
+[[ -f ${ZDOTDIR:-$HOME}/.functions.zsh ]] && source ${ZDOTDIR:-$HOME}/.functions.zsh
 
 # ── Atuin (historique amélioré) ───────────────────────────────────────────────
 if command -v atuin &>/dev/null; then
@@ -56,7 +56,7 @@ export FZF_DEFAULT_COMMAND='find . -type f 2>/dev/null'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 
 # ── Powerlevel10k config ───────────────────────────────────────────────────────
-[[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
+[[ -f ${ZDOTDIR:-$HOME}/.p10k.zsh ]] && source ${ZDOTDIR:-$HOME}/.p10k.zsh
 
 # ── Options zsh supplémentaires ───────────────────────────────────────────────
 setopt AUTO_CD              # cd sans taper cd

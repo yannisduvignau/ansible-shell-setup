@@ -1,80 +1,110 @@
 ---
-# Installe atuin en téléchargeant directement le binaire depuis GitHub
-# (bypass du script setup.atuin.sh qui requiert /dev/tty pour ses prompts interactifs)
+# ─── macOS : installation via Homebrew ────────────────────────────────────────
+- name: Install atuin via Homebrew (macOS)
+  community.general.homebrew:
+    name: atuin
+    state: present
+  become: false
+  when: ansible_facts['os_family'] == "Darwin"
 
-- name: Check if atuin is already installed
+# ─── Debian : installation via binaire GitHub ─────────────────────────────────
+- name: Check if atuin is already installed (Debian)
   ansible.builtin.stat:
     path: "{{ shell_user_home }}/.atuin/bin/atuin"
   register: atuin_bin
+  when: ansible_facts['os_family'] == "Debian"
 
-- name: Get latest atuin release info from GitHub API
+- name: Get latest atuin release info from GitHub API (Debian)
   ansible.builtin.uri:
     url: https://api.github.com/repos/atuinsh/atuin/releases/latest
     return_content: true
     headers:
       Accept: application/vnd.github.v3+json
   register: atuin_release
-  when: not atuin_bin.stat.exists
+  when:
+    - ansible_facts['os_family'] == "Debian"
+    - not atuin_bin.stat.exists
 
-- name: Set atuin version and download URL
+- name: Set atuin arch target (Debian)
+  ansible.builtin.set_fact:
+    atuin_target: "{{ 'aarch64-unknown-linux-musl' if ansible_facts['architecture'] == 'aarch64' else 'x86_64-unknown-linux-musl' }}"
+  when:
+    - ansible_facts['os_family'] == "Debian"
+    - not atuin_bin.stat.exists
+
+- name: Set atuin version and archive name (Debian)
   ansible.builtin.set_fact:
     atuin_version: "{{ atuin_release.json.tag_name | regex_replace('^v', '') }}"
-    atuin_archive: "atuin-{{ atuin_release.json.tag_name | regex_replace('^v', '') }}-x86_64-unknown-linux-musl.tar.gz"
-  when: not atuin_bin.stat.exists
+    atuin_archive: "atuin-{{ atuin_target }}.tar.gz"
+  when:
+    - ansible_facts['os_family'] == "Debian"
+    - not atuin_bin.stat.exists
 
-- name: "Download atuin {{ atuin_version }} binary archive"
+- name: "Download atuin {{ atuin_version }} binary archive (Debian)"
   ansible.builtin.get_url:
     url: "https://github.com/atuinsh/atuin/releases/download/v{{ atuin_version }}/{{ atuin_archive }}"
     dest: "/tmp/{{ atuin_archive }}"
     mode: "0644"
-  when: not atuin_bin.stat.exists
+  when:
+    - ansible_facts['os_family'] == "Debian"
+    - not atuin_bin.stat.exists
 
-- name: Ensure atuin bin directory exists
+- name: Ensure atuin bin directory exists (Debian)
   ansible.builtin.file:
     path: "{{ shell_user_home }}/.atuin/bin"
     state: directory
     owner: "{{ shell_user }}"
     group: "{{ shell_user }}"
     mode: "0755"
-  when: not atuin_bin.stat.exists
+  when:
+    - ansible_facts['os_family'] == "Debian"
+    - not atuin_bin.stat.exists
 
-- name: Extract atuin binary
+- name: Extract atuin binary (Debian)
   ansible.builtin.unarchive:
     src: "/tmp/{{ atuin_archive }}"
     dest: "/tmp"
     remote_src: true
     extra_opts: ["--wildcards", "*/atuin"]
-  when: not atuin_bin.stat.exists
+  when:
+    - ansible_facts['os_family'] == "Debian"
+    - not atuin_bin.stat.exists
 
-- name: Install atuin binary to ~/.atuin/bin/
+- name: Install atuin binary to ~/.atuin/bin/ (Debian)
   ansible.builtin.copy:
-    src: "/tmp/atuin-{{ atuin_version }}-x86_64-unknown-linux-musl/atuin"
+    src: "/tmp/atuin-{{ atuin_target }}/atuin"
     dest: "{{ shell_user_home }}/.atuin/bin/atuin"
     owner: "{{ shell_user }}"
     group: "{{ shell_user }}"
     mode: "0755"
     remote_src: true
-  when: not atuin_bin.stat.exists
+  when:
+    - ansible_facts['os_family'] == "Debian"
+    - not atuin_bin.stat.exists
 
-- name: Symlink atuin to /usr/local/bin for system-wide access
+- name: Symlink atuin to /usr/local/bin (Debian)
   ansible.builtin.file:
     src: "{{ shell_user_home }}/.atuin/bin/atuin"
     dest: /usr/local/bin/atuin
     state: link
     force: true
+  when: ansible_facts['os_family'] == "Debian"
 
-- name: Clean up temporary archive
+- name: Clean up temporary archive (Debian)
   ansible.builtin.file:
     path: "/tmp/{{ atuin_archive }}"
     state: absent
-  when: not atuin_bin.stat.exists
+  when:
+    - ansible_facts['os_family'] == "Debian"
+    - not atuin_bin.stat.exists
 
+# ─── Config commune (macOS + Debian) ──────────────────────────────────────────
 - name: Ensure atuin config directory exists
   ansible.builtin.file:
     path: "{{ shell_user_home }}/.config/atuin"
     state: directory
     owner: "{{ shell_user }}"
-    group: "{{ shell_user }}"
+    group: "{{ 'staff' if ansible_facts['os_family'] == 'Darwin' else shell_user }}"
     mode: "0755"
 
 - name: Deploy atuin config
@@ -82,5 +112,5 @@
     src: config.toml.j2
     dest: "{{ shell_user_home }}/.config/atuin/config.toml"
     owner: "{{ shell_user }}"
-    group: "{{ shell_user }}"
+    group: "{{ 'staff' if ansible_facts['os_family'] == 'Darwin' else shell_user }}"
     mode: "0644"
