@@ -1,0 +1,39 @@
+---
+- name: Check if atuin is already installed
+  ansible.builtin.stat:
+    path: /usr/local/bin/atuin
+  register: atuin_bin
+
+- name: Download atuin installer
+  ansible.builtin.get_url:
+    url: https://setup.atuin.sh
+    dest: /tmp/atuin_install.sh
+    mode: "0755"
+  when: not atuin_bin.stat.exists
+
+- name: Install atuin
+  ansible.builtin.command:
+    cmd: /tmp/atuin_install.sh
+  become: true
+  become_user: "{{ shell_user }}"
+  environment:
+    HOME: "{{ shell_user_home }}"
+  when: not atuin_bin.stat.exists
+  register: atuin_install
+  changed_when: atuin_install.rc == 0
+
+- name: Ensure atuin config directory exists
+  ansible.builtin.file:
+    path: "{{ shell_user_home }}/.config/atuin"
+    state: directory
+    owner: "{{ shell_user }}"
+    group: "{{ shell_user }}"
+    mode: "0755"
+
+- name: Deploy atuin config
+  ansible.builtin.template:
+    src: config.toml.j2
+    dest: "{{ shell_user_home }}/.config/atuin/config.toml"
+    owner: "{{ shell_user }}"
+    group: "{{ shell_user }}"
+    mode: "0644"

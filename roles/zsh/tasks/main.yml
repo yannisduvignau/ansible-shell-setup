@@ -1,0 +1,18 @@
+---
+- name: Get shell_user uid
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ shell_user }}"
+
+- name: Set zsh as default shell
+  ansible.builtin.user:
+    name: "{{ shell_user }}"
+    shell: /bin/zsh
+
+- name: Ensure .config directory exists
+  ansible.builtin.file:
+    path: "{{ shell_user_home }}/.config"
+    state: directory
+    owner: "{{ shell_user }}"
+    group: "{{ shell_user }}"
+    mode: "0755"

@@ -1,0 +1,50 @@
+---
+# Target user for shell setup
+shell_user: "{{ ansible_user }}"
+shell_user_home: "{{ '/root' if shell_user == 'root' else '/home/' + shell_user }}"
+
+# Oh My Zsh
+omz_install_dir: "{{ shell_user_home }}/.oh-my-zsh"
+omz_theme: "powerlevel10k/powerlevel10k"
+
+# Plugins to enable in OMZ
+omz_plugins:
+  - git
+  - docker
+  - docker-compose
+  - kubectl
+  - terraform
+  - python
+  - pip
+  - sudo
+  - history
+  - dirhistory
+  - extract
+  - z
+  - colored-man-pages
+  - command-not-found
+  - zsh-autosuggestions
+  - zsh-syntax-highlighting
+  - zsh-completions
+
+# Powerlevel10k
+p10k_install_dir: "{{ omz_install_dir }}/custom/themes/powerlevel10k"
+
+# Atuin
+atuin_version: "latest"
+
+# ── MesloLGS NF fonts ─────────────────────────────────────────────────────────
+# sha256 checksums pin the exact upstream release (romkatv/powerlevel10k-media).
+# Run: curl -sL <url> | sha256sum   to refresh after an upstream update.
+nerd_fonts_dir: "{{ shell_user_home }}/.local/share/fonts"
+nerd_font_name: "MesloLGS NF"
+
+nerd_font_files:
+  - name: "MesloLGS NF Regular.ttf"
+    url: "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf"
+  - name: "MesloLGS NF Bold.ttf"
+    url: "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold.ttf"
+  - name: "MesloLGS NF Italic.ttf"
+    url: "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Italic.ttf"
+  - name: "MesloLGS NF Bold Italic.ttf"
+    url: "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold%20Italic.ttf"

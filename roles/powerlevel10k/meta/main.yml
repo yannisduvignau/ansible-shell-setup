@@ -1,0 +1,15 @@
+---
+galaxy_info:
+  role_name: powerlevel10k
+  author: yourname
+  description: >
+    Install Powerlevel10k theme, MesloLGS NF fonts (smart detection),
+    and deploy a pre-configured p10k prompt with auto-detected IP interface.
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Debian
+      versions: [bullseye, bookworm]
+    - name: Ubuntu
+      versions: [focal, jammy, noble]
+dependencies: []

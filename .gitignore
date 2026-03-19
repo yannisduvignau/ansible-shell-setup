@@ -1,0 +1,29 @@
+# Ansible
+*.retry
+.ansible/
+*.vault_pass
+
+# Inventory overrides (keep inventory.ini tracked as example)
+inventory.local.ini
+hosts.local
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Secrets
+*.pem
+*.key
+vault_pass.txt

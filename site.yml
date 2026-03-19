@@ -1,0 +1,17 @@
+---
+- name: Setup Shell Environment
+  hosts: all
+  become: true
+  gather_facts: true
+  gather_subset:
+    - network   # needed for ansible_default_ipv4
+    - hardware  # needed for ram/cpu facts used in sysinfo function
+  vars_files:
+    - vars/main.yml
+  roles:
+    - role: packages
+    - role: zsh
+    - role: oh_my_zsh
+    - role: powerlevel10k
+    - role: atuin
+    - role: shell_config

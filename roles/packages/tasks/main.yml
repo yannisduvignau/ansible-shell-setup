@@ -1,0 +1,28 @@
+---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install required packages
+  ansible.builtin.apt:
+    name:
+      - zsh
+      - git
+      - curl
+      - wget
+      - unzip
+      - fontconfig
+      - build-essential
+      - lsd          # ls moderne avec icônes
+      - bat          # cat amélioré (batcat)
+      - fzf          # fuzzy finder
+      - ripgrep      # grep ultra-rapide
+      - htop
+      - neofetch
+      - python3
+      - python3-pip
+      - jq
+      - net-tools
+      - iproute2
+    state: present

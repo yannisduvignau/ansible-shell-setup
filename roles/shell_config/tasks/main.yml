@@ -1,0 +1,33 @@
+---
+- name: Deploy .zshrc
+  ansible.builtin.template:
+    src: zshrc.j2
+    dest: "{{ shell_user_home }}/.zshrc"
+    owner: "{{ shell_user }}"
+    group: "{{ shell_user }}"
+    mode: "0644"
+    backup: true
+
+- name: Deploy aliases file
+  ansible.builtin.template:
+    src: aliases.zsh.j2
+    dest: "{{ shell_user_home }}/.aliases.zsh"
+    owner: "{{ shell_user }}"
+    group: "{{ shell_user }}"
+    mode: "0644"
+
+- name: Deploy functions file
+  ansible.builtin.template:
+    src: functions.zsh.j2
+    dest: "{{ shell_user_home }}/.functions.zsh"
+    owner: "{{ shell_user }}"
+    group: "{{ shell_user }}"
+    mode: "0644"
+
+- name: Deploy exports file
+  ansible.builtin.template:
+    src: exports.zsh.j2
+    dest: "{{ shell_user_home }}/.exports.zsh"
+    owner: "{{ shell_user }}"
+    group: "{{ shell_user }}"
+    mode: "0644"
