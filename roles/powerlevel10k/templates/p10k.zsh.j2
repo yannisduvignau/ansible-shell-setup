@@ -256,5 +256,5 @@
   (( ! $+functions[p10k] )) || p10k reload
 }
 
-(( ${#p10k_config_opts} )) && setopt ${p10k_config_opts[@]}
-'builtin' 'unset' 'p10k_config_opts'
+{% raw %}(( ${#p10k_config_opts} )) && setopt ${p10k_config_opts[@]}
+'builtin' 'unset' 'p10k_config_opts'{% endraw %}
