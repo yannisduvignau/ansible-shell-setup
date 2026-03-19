@@ -6,7 +6,7 @@ shell_user_home: "{{ '/Users/' + shell_user if ansible_facts['os_family'] == 'Da
 # Oh My Zsh
 omz_install_dir: "{{ shell_user_home }}/.oh-my-zsh"
 omz_theme: "powerlevel10k/powerlevel10k"
-zdotdir: "{{ shell_user_home }}/.config/zshrc"
+zdotdir: "{{ shell_user_home + '/.config/zshrc' if ansible_facts['os_family'] == 'Darwin' else shell_user_home }}"
 
 # Plugins to enable in OMZ
 omz_plugins:

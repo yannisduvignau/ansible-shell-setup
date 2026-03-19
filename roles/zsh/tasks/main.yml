@@ -24,3 +24,14 @@
     owner: "{{ shell_user }}"
     group: "{{ 'staff' if ansible_facts['os_family'] == 'Darwin' else shell_user }}"
     mode: "0755"
+
+- name: Ensure zdotdir directory exists (macOS)
+  ansible.builtin.file:
+    path: "{{ zdotdir }}"
+    state: directory
+    owner: "{{ shell_user }}"
+    group: "staff"
+    mode: "0755"
+  when:
+    - ansible_facts['os_family'] == "Darwin"
+    - zdotdir != shell_user_home
