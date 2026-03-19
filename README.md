@@ -1,14 +1,11 @@
-<div align="center">
-
 # ⚡ ansible-shell-setup
 
-**A fully automated, idempotent Ansible playbook that turns any Debian/Ubuntu machine into a productive developer shell in under 5 minutes.**
+**Automated, idempotent Ansible playbook that turns any fresh Debian/Ubuntu or macOS machine into a fully equipped developer shell — in under 5 minutes.**
 
-[![Ansible Lint](https://github.com/yourname/ansible-shell-setup/actions/workflows/lint.yml/badge.svg)](https://github.com/yourname/ansible-shell-setup/actions/workflows/lint.yml)
+[![Ansible Lint](https://github.com/yannisduvignau/ansible-shell-setup/actions/workflows/lint.yml/badge.svg)](https://github.com/yannisduvignau/ansible-shell-setup/actions/workflows/lint.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Ansible](https://img.shields.io/badge/Ansible-2.14%2B-red?logo=ansible)](https://docs.ansible.com)
-
-</div>
+[![Platform](https://img.shields.io/badge/Platform-Debian%20%7C%20macOS-blue)](#-requirements)
 
 ---
 
@@ -17,55 +14,57 @@
 | Component | Description |
 |---|---|
 | **Zsh** | Main shell, set as default |
-| **Oh My Zsh** | Plugin framework with auto-update |
+| **Oh My Zsh** | Plugin framework with silent auto-update |
 | **Powerlevel10k** | Ultra-fast prompt with 15+ context-aware segments |
 | **MesloLGS NF** | Nerd Font with full icon support for P10k |
-| **Atuin** | Magical shell history (fuzzy search, sync-ready) |
+| **Atuin** | Fuzzy shell history with sync support |
 | **lsd** | Modern `ls` with icons and colours |
 | **bat** | `cat` with syntax highlighting and line numbers |
-| **fzf** | Fuzzy finder — `Ctrl+R`, `Ctrl+T`, `Alt+C` |
+| **fzf** | Fuzzy finder — `Ctrl+R`, `Ctrl+T` |
 | **ripgrep** | Blazing-fast `grep` replacement |
-| **80+ aliases** | Git, Docker, Kubernetes, apt, network, and more |
+| **htop / neofetch** | System monitoring |
+| **jq** | JSON processor |
+| **80+ aliases** | Git, Docker, Kubernetes, network, and more |
 | **Shell functions** | `extract`, `mkcd`, `netinfo`, `sysinfo`, `genpass`, and more |
 
 ---
 
 ## 🖥️ Prompt overview
 
-The Powerlevel10k prompt shows rich context while staying fast and uncluttered — segments only appear when they are relevant.
+Powerlevel10k shows rich context while staying fast and uncluttered — segments only appear when relevant.
 
 ```
- ~/p/my-app  main ✔   󰎙 20.11  󰟓 1.22       󱃾 dev:default  12:34
-❯
+╭─  ~/p/my-app  on  main ✔   󰎙 20.11   󰟓 1.22   󱃾 dev:default   192.168.1.10 󰩟  12:34
+╰─❯
 ```
 
 ### Left side
 
 | Segment | Description |
 |---|---|
-| OS icon | Linux / macOS / WSL icon |
+| OS icon | 🍎 macOS / 🐧 Linux |
 | `context` | `user@host` — shown only over SSH or with infra commands |
 | `dir` | Smart-truncated path, anchored at project roots |
-| `vcs` | Branch + staged / unstaged / untracked / conflict / ahead / behind |
+| `vcs` | Branch + staged / unstaged / untracked / conflicts / ahead / behind |
 
-### Right side — added in this release
+### Right side
 
 | Segment | Shown when… |
 |---|---|
 | `status` | Last command exited non-zero |
 | `command_execution_time` | Last command took ≥ 3 s |
-| `background_jobs` | At least one suspended or background job |
-| `node_version` | `package.json` / `.nvmrc` / `.node-version` in tree |
+| `background_jobs` | At least one background or suspended job |
+| `node_version` | `package.json` / `.nvmrc` in tree |
 | `go_version` | `go.mod` / `.go-version` in tree |
 | `rust_version` | `Cargo.toml` / `rust-toolchain` in tree |
 | `python_version` | `pyproject.toml` / `.python-version` in tree |
-| `aws` | `AWS_PROFILE` set and running an AWS-related command |
+| `aws` | `AWS_PROFILE` set + running an AWS-related command |
 | `terraform` | Running `terraform` / `terragrunt` / `tofu` |
 | `kubecontext` | Running `kubectl` / `helm` / `k` and friends |
-| `load` | Always — colour shifts green → yellow → red with load |
-| `ram` | Always — shows available RAM |
-| `disk_usage` | Only when disk usage ≥ 85 % (warning) or ≥ 95 % (critical) |
-| `ip` | Always — local IP of the primary network interface |
+| `load` | Always — colour shifts green → yellow → red |
+| `ram` | Always — available RAM |
+| `disk_usage` | Disk usage ≥ 85% (warning) or ≥ 95% (critical) |
+| `ip` | Always — local IP of primary interface (auto-detected) |
 | `time` | Always — `HH:MM` |
 
 > **Tip:** Run `p10k configure` after installation to tweak the prompt interactively.
@@ -74,22 +73,34 @@ The Powerlevel10k prompt shows rich context while staying fast and uncluttered �
 
 ## 📋 Requirements
 
-- **Control node:** any machine with Python 3.9+ and Ansible 2.14+
-- **Target host:** Debian 11+ or Ubuntu 20.04+
-- **SSH access** with `sudo` privileges (or `--connection local`)
+### Control node
+- Python 3.9+
+- Ansible 2.14+
 
-### Installing Ansible
+### Target host
 
-> **Debian 12+ / Ubuntu 23.04+** block `pip install` system-wide ([PEP 668](https://peps.python.org/pep-0668/)).  
-> Use one of the methods below — or just run the provided script.
+| Platform | Version |
+|---|---|
+| Debian | 11+ (Bullseye, Bookworm) |
+| Ubuntu | 20.04+ |
+| macOS | 12+ (Monterey and later, Apple Silicon & Intel) |
 
-#### ✅ Recommended — one-liner script (auto-detects the best method)
+SSH access with `sudo` privileges is required for remote targets. For local setups, use `--connection local`.
+
+---
+
+## 🔧 Installing Ansible
+
+> **Debian 12+ / Ubuntu 23.04+** block `pip install` system-wide ([PEP 668](https://peps.python.org/pep-0668/)).
+> Use one of the options below, or run the provided install script.
+
+### Recommended — one-liner script
 
 ```bash
 bash install.sh
 ```
 
-The script tries three strategies in order:
+The script auto-detects the best installation method:
 
 | # | Method | When used |
 |---|---|---|
@@ -97,20 +108,20 @@ The script tries three strategies in order:
 | 2 | **apt** (`ansible` / `ansible-core`) | When pipx is unavailable |
 | 3 | **pip `--break-system-packages`** | Last resort, with explicit warning |
 
-#### Manual options
+### Manual options
 
 ```bash
-# Option A — pipx (recommended, works on Debian 12+ / Ubuntu 23.04+)
+# Option A — pipx (recommended for Debian 12+ / Ubuntu 23.04+)
 sudo apt install -y pipx python3-full
 pipx install --include-deps ansible
-pipx ensurepath        # adds ~/.local/bin to PATH
-source ~/.bashrc       # reload PATH in current shell
+pipx ensurepath
+source ~/.bashrc
 
-# Option B — apt (ansible-core, minimal but always works)
+# Option B — apt
 sudo apt update && sudo apt install -y ansible-core
 
-# Option C — pip with explicit system override (use with caution)
-pip install --break-system-packages ansible
+# Option C — Homebrew (macOS)
+brew install ansible
 ```
 
 ---
@@ -124,7 +135,7 @@ git clone https://github.com/yannisduvignau/ansible-shell-setup.git
 cd ansible-shell-setup
 ```
 
-### 2. Configure inventory
+### 2. Configure inventory (remote only)
 
 Edit `inventory.ini`:
 
@@ -136,20 +147,17 @@ my-server ansible_host=192.168.1.100 ansible_user=ubuntu
 ### 3. Run
 
 ```bash
-# Full setup
-ansible-playbook site.yml
-
-# Ask for sudo password
-ansible-playbook site.yml --ask-become-pass
-
-# Local machine (no SSH)
+# Local machine — Debian
 ansible-playbook site.yml -i "localhost," --connection local
 
-# Specific host
-ansible-playbook site.yml -l my-server
+# Local machine — macOS (no sudo for Homebrew)
+ansible-playbook site.yml -i "localhost," --connection local --ask-become-pass
 
-# Different user than the SSH user
-ansible-playbook site.yml -e shell_user=alice
+# Remote server
+ansible-playbook site.yml --ask-become-pass
+
+# Specific user
+ansible-playbook site.yml -e shell_user=alice --ask-become-pass
 
 # Dry run
 ansible-playbook site.yml --check
@@ -161,6 +169,9 @@ ansible-playbook site.yml --check
 2. Set your terminal font to **MesloLGS NF**
 3. Enjoy the prompt 🎉
 
+> On macOS: Terminal → Preferences → Profiles → Font  
+> On iTerm2: Preferences → Profiles → Text → Font
+
 ---
 
 ## 🗂️ Project structure
@@ -170,18 +181,16 @@ ansible-shell-setup/
 ├── site.yml                        # Main playbook
 ├── ansible.cfg                     # Ansible configuration
 ├── inventory.ini                   # Host inventory
+├── install.sh                      # Ansible bootstrapper
 ├── vars/
 │   └── main.yml                    # Global variables
-├── roles/
-│   ├── packages/                   # apt packages
-│   ├── zsh/                        # Zsh + default shell
-│   ├── oh_my_zsh/                  # OMZ + community plugins
-│   ├── powerlevel10k/              # Theme + Nerd Font + p10k config
-│   ├── atuin/                      # Better shell history
-│   └── shell_config/               # .zshrc, aliases, functions, exports
-└── .github/
-    ├── workflows/lint.yml          # Ansible-lint CI
-    └── ISSUE_TEMPLATE/             # Bug & feature templates
+└── roles/
+    ├── packages/                   # apt (Debian) / Homebrew (macOS)
+    ├── zsh/                        # Zsh installation + default shell
+    ├── oh_my_zsh/                  # OMZ + community plugins
+    ├── powerlevel10k/              # Theme + Nerd Fonts + p10k config
+    ├── atuin/                      # Shell history (Homebrew/binary)
+    └── shell_config/               # .zshrc, aliases, functions, exports
 ```
 
 ---
@@ -194,9 +203,9 @@ ansible-shell-setup/
 ansible-playbook site.yml -e shell_user=alice
 ```
 
-### Add / remove OMZ plugins
+### Add or remove OMZ plugins
 
-In `vars/main.yml`:
+Edit `vars/main.yml`:
 
 ```yaml
 omz_plugins:
@@ -205,7 +214,7 @@ omz_plugins:
   - kubectl
   - zsh-autosuggestions
   - zsh-syntax-highlighting
-  - terraform        # add or remove freely
+  - terraform
   - aws
 ```
 
@@ -213,13 +222,13 @@ omz_plugins:
 
 Edit `roles/powerlevel10k/templates/p10k.zsh.j2`:
 
-- **Segments:** `POWERLEVEL9K_LEFT_PROMPT_ELEMENTS` / `POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS`
-- **Colours:** each segment has a `_FOREGROUND` variable (256-colour index)
-- **Thresholds:** `POWERLEVEL9K_COMMAND_EXECUTION_TIME_THRESHOLD`, `POWERLEVEL9K_DISK_USAGE_WARNING_LEVEL`
+- **Segments** → `POWERLEVEL9K_LEFT_PROMPT_ELEMENTS` / `POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS`
+- **Colours** → each segment has a `_FOREGROUND` variable (256-colour index)
+- **Thresholds** → `POWERLEVEL9K_COMMAND_EXECUTION_TIME_THRESHOLD`, `POWERLEVEL9K_DISK_USAGE_WARNING_LEVEL`
 
 ### Add your own aliases
 
-Edit `roles/shell_config/templates/aliases.zsh.j2`. Re-run the playbook to push updates.
+Edit `roles/shell_config/templates/aliases.zsh.j2`, then re-run the playbook to push updates.
 
 ---
 
@@ -227,63 +236,56 @@ Edit `roles/shell_config/templates/aliases.zsh.j2`. Re-run the playbook to push 
 
 | Variable | Default | Description |
 |---|---|---|
-| `shell_user` | `{{ ansible_user }}` | User to configure |
-| `shell_user_home` | `/home/<user>` | Home directory (auto-set for root) |
-| `omz_install_dir` | `~/.oh-my-zsh` | Oh My Zsh path |
-| `omz_theme` | `powerlevel10k/powerlevel10k` | ZSH theme |
-| `omz_plugins` | See `vars/main.yml` | OMZ plugins list |
-| `p10k_install_dir` | `~/.oh-my-zsh/custom/themes/powerlevel10k` | P10k path |
-| `nerd_fonts_dir` | `~/.local/share/fonts` | Font installation directory |
+| `shell_user` | `$USER` (env fallback) | User to configure |
+| `shell_user_home` | Auto-detected via `$HOME` | Home directory |
+| `zdotdir` | `~/.config/zshrc` (macOS) / `~` (Debian) | Zsh config directory |
+| `omz_install_dir` | `~/.oh-my-zsh` | Oh My Zsh installation path |
+| `omz_theme` | `powerlevel10k/powerlevel10k` | Zsh theme |
+| `omz_plugins` | See `vars/main.yml` | OMZ plugin list |
+| `p10k_install_dir` | `~/.oh-my-zsh/custom/themes/powerlevel10k` | Powerlevel10k path |
+| `nerd_fonts_dir` | `~/.local/share/fonts` (Debian) / `~/Library/Fonts` (macOS) | Font installation directory |
+| `atuin_version` | `latest` | Atuin version to install |
 
 ---
 
+## 🔄 Idempotency
+
+Every task is safe to re-run. The playbook detects what is already installed and skips it. Use it to:
+
+- Bootstrap a fresh machine
+- Push config updates after editing templates
+- Keep multiple machines in sync
 
 ---
 
-## 🔍 Smart font detection
+## 🐛 Troubleshooting
 
-The `powerlevel10k` role runs a **3-step check** before touching any font file:
+### Prompt not showing after install
 
+Make sure your terminal font is set to **MesloLGS NF**. Without it, p10k falls back silently to a plain prompt.
+
+### `ansible_user` is undefined
+
+Pass the user explicitly:
+
+```bash
+ansible-playbook site.yml -i "localhost," --connection local -e shell_user=$(whoami)
 ```
-1. fc-list "MesloLGS NF"          → already in fontconfig cache? skip everything.
-2. stat each .ttf on disk          → only download the missing files.
-3. fc-cache -fv                    → only runs if ≥ 1 file was actually downloaded.
+
+### Locale error on Debian
+
+```bash
+sudo sed -i 's/# fr_FR.UTF-8 UTF-8/fr_FR.UTF-8 UTF-8/' /etc/locale.gen
+sudo locale-gen
+sudo update-locale LANG=fr_FR.UTF-8
+exec zsh
 ```
 
-This means re-running the playbook on an already-configured machine downloads and writes **nothing** — fully idempotent.
+### Homebrew refuses to run as root (macOS)
+
+The playbook handles this automatically with `become: false` on Homebrew tasks. If you encounter this manually, never run `brew` as root.
 
 ---
-
-## 🌐 Automatic IP interface detection
-
-The IP segment in P10k needs to know which network interface to watch.
-The role resolves it automatically via a **3-stage fallback**:
-
-```
-Stage 1 — Ansible fact (fastest)
-  ansible_default_ipv4.interface
-  → set by Ansible's network fact gathering; always accurate
-
-Stage 2 — ip route (shell fallback)
-  ip route show default | awk '/^default/{print $5}'
-  → used when facts are unavailable (e.g. --connection local without full gather)
-
-Stage 3 — catch-all regex
-  [ewr].*|en.*|wl.*
-  → last resort; matches eth*, ens*, wlan*, en* on most Debian/Ubuntu systems
-```
-
-The resolved interface name is injected directly into `~/.p10k.zsh` at deploy time:
-
-```zsh
-# example on a VM with interface ens3:
-typeset -g POWERLEVEL9K_IP_INTERFACE='ens3'
-
-# example on a laptop with interface wlan0:
-typeset -g POWERLEVEL9K_IP_INTERFACE='wlan0'
-```
-
-No regex, no guessing — the exact interface is baked in.
 
 ## 🤝 Contributing
 
@@ -291,11 +293,11 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) before
 
 1. Fork the repo
 2. Create a feature branch: `git checkout -b feat/my-feature`
-3. Commit your changes using [Conventional Commits](https://www.conventionalcommits.org/)
+3. Commit using [Conventional Commits](https://www.conventionalcommits.org/)
 4. Push and open a PR against `main`
 
 ---
 
 ## 📄 License
 
-[MIT](LICENSE) © 2024 yourname
+[MIT](LICENSE) © 2024 yannisduvignau
