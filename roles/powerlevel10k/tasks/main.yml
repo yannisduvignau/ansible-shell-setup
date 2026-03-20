@@ -8,6 +8,21 @@
   become: true
   become_user: "{{ shell_user }}"
 
+# ─── Resolve fonts directory based on OS ──────────────────────────────────────
+- name: Set fonts directory (macOS → ~/Library/Fonts, Linux → ~/.local/share/fonts)
+  ansible.builtin.set_fact:
+    nerd_fonts_dir: >-
+      {{
+        shell_user_home + '/Library/Fonts'
+        if ansible_facts['os_family'] == 'Darwin'
+        else shell_user_home + '/.local/share/fonts'
+      }}
+
+# ─── Resolve font group (staff on macOS, shell_user on Linux) ─────────────────
+- name: Set font file group
+  ansible.builtin.set_fact:
+    nerd_fonts_group: "{{ 'staff' if ansible_facts['os_family'] == 'Darwin' else shell_user }}"
+
 # ─── MesloLGS NF — smart detection before downloading ─────────────────────────
 - name: Check if MesloLGS NF fonts are already registered in fontconfig (Debian)
   ansible.builtin.command: fc-list "MesloLGS NF"
@@ -33,22 +48,22 @@
         | list
       }}
 
-- name: Ensure local fonts directory exists
+- name: Ensure fonts directory exists
   ansible.builtin.file:
     path: "{{ nerd_fonts_dir }}"
     state: directory
     owner: "{{ shell_user }}"
-    group: "{{ 'staff' if ansible_facts['os_family'] == 'Darwin' else shell_user }}"
+    group: "{{ nerd_fonts_group }}"
     mode: "0755"
   when: missing_fonts | length > 0 or (meslolgs_fc_list.stdout is defined and meslolgs_fc_list.stdout == "")
 
-- name: "Download missing MesloLGS NF font files"
+- name: Download missing MesloLGS NF font files
   ansible.builtin.get_url:
     url: "{{ item.url }}"
     dest: "{{ nerd_fonts_dir }}/{{ item.name }}"
     checksum: "{{ item.checksum | default(omit) }}"
     owner: "{{ shell_user }}"
-    group: "{{ 'staff' if ansible_facts['os_family'] == 'Darwin' else shell_user }}"
+    group: "{{ nerd_fonts_group }}"
     mode: "0644"
     timeout: 30
   loop: "{{ missing_fonts }}"
@@ -123,5 +138,5 @@
     src: p10k.zsh.j2
     dest: "{{ zdotdir }}/.p10k.zsh"
     owner: "{{ shell_user }}"
-    group: "{{ 'staff' if ansible_facts['os_family'] == 'Darwin' else shell_user }}"
+    group: "{{ nerd_fonts_group }}"
     mode: "0644"
