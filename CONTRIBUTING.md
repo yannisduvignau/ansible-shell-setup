@@ -5,7 +5,7 @@ Thank you for taking the time to contribute! 🎉
 ## Development setup
 
 ```bash
-git clone https://github.com/yourname/ansible-shell-setup.git
+git clone https://github.com/yannisduvignau/ansible-shell-setup.git
 cd ansible-shell-setup
 pip install ansible ansible-lint
 ```

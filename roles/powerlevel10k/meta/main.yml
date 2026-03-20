@@ -1,7 +1,7 @@
 ---
 galaxy_info:
   role_name: powerlevel10k
-  author: yourname
+  author: yannisduvignau
   description: >
     Install Powerlevel10k theme, MesloLGS NF fonts (smart detection),
     and deploy a pre-configured p10k prompt with auto-detected IP interface.
