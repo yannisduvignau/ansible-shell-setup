@@ -61,16 +61,23 @@
   # ╚══════════════════════════════════════════════════════════════════════════╝
   typeset -g POWERLEVEL9K_MODE=nerdfont-v3
   typeset -g POWERLEVEL9K_ICON_PADDING=moderate
-  typeset -g POWERLEVEL9K_BACKGROUND=                     # transparent bg
-  typeset -g POWERLEVEL9K_{LEFT,RIGHT}_{LEFT,RIGHT}_WHITESPACE=
-  typeset -g POWERLEVEL9K_{LEFT,RIGHT}_SUBSEGMENT_SEPARATOR=' '
-  typeset -g POWERLEVEL9K_{LEFT,RIGHT}_SEGMENT_SEPARATOR=
+  typeset -g POWERLEVEL9K_BACKGROUND=                     # default: transparent
   typeset -g POWERLEVEL9K_VISUAL_IDENTIFIER_EXPANSION='${P9K_VISUAL_IDENTIFIER}'
   typeset -g POWERLEVEL9K_TRANSIENT_PROMPT=always
 
-  # ─── Segment prefix/suffix (subtle separators between segments) ──────────
-  typeset -g POWERLEVEL9K_LEFT_PROMPT_FIRST_SEGMENT_START_SYMBOL=''
-  typeset -g POWERLEVEL9K_LEFT_PROMPT_LAST_SEGMENT_END_SYMBOL=''
+  # ─── Left prompt: block style with powerline separators ─────────────────
+  typeset -g POWERLEVEL9K_LEFT_LEFT_WHITESPACE=' '
+  typeset -g POWERLEVEL9K_LEFT_RIGHT_WHITESPACE=' '
+  typeset -g POWERLEVEL9K_LEFT_SEGMENT_SEPARATOR=''       # arrow between blocks
+  typeset -g POWERLEVEL9K_LEFT_SUBSEGMENT_SEPARATOR=' '     # thin sep within same bg
+  typeset -g POWERLEVEL9K_LEFT_PROMPT_FIRST_SEGMENT_START_SYMBOL=''  # rounded start
+  typeset -g POWERLEVEL9K_LEFT_PROMPT_LAST_SEGMENT_END_SYMBOL=''   # arrow end
+
+  # ─── Right prompt: clean/transparent (no blocks) ────────────────────────
+  typeset -g POWERLEVEL9K_RIGHT_LEFT_WHITESPACE=' '
+  typeset -g POWERLEVEL9K_RIGHT_RIGHT_WHITESPACE=' '
+  typeset -g POWERLEVEL9K_RIGHT_SEGMENT_SEPARATOR=''
+  typeset -g POWERLEVEL9K_RIGHT_SUBSEGMENT_SEPARATOR=' '
   typeset -g POWERLEVEL9K_RIGHT_PROMPT_FIRST_SEGMENT_START_SYMBOL=''
   typeset -g POWERLEVEL9K_RIGHT_PROMPT_LAST_SEGMENT_END_SYMBOL=''
 
@@ -78,34 +85,38 @@
   # ║  OS ICON                                                                ║
   # ╚══════════════════════════════════════════════════════════════════════════╝
 {% if ansible_os_family | default('') == 'Darwin' %}
-  typeset -g POWERLEVEL9K_OS_ICON_FOREGROUND=255          # white Apple icon
-  typeset -g POWERLEVEL9K_OS_ICON_CONTENT_EXPANSION=' 󰀵'
+  typeset -g POWERLEVEL9K_OS_ICON_FOREGROUND=255
+  typeset -g POWERLEVEL9K_OS_ICON_BACKGROUND=236
+  typeset -g POWERLEVEL9K_OS_ICON_CONTENT_EXPANSION='󰀵'
 {% elif ansible_os_family | default('') == 'Debian' %}
-  typeset -g POWERLEVEL9K_OS_ICON_FOREGROUND=196          # red Debian swirl
-  typeset -g POWERLEVEL9K_OS_ICON_CONTENT_EXPANSION=' 󰣚'
+  typeset -g POWERLEVEL9K_OS_ICON_FOREGROUND=196
+  typeset -g POWERLEVEL9K_OS_ICON_BACKGROUND=236
+  typeset -g POWERLEVEL9K_OS_ICON_CONTENT_EXPANSION='󰣚'
 {% else %}
   typeset -g POWERLEVEL9K_OS_ICON_FOREGROUND=212
+  typeset -g POWERLEVEL9K_OS_ICON_BACKGROUND=236
 {% endif %}
 
   # ╔══════════════════════════════════════════════════════════════════════════╗
   # ║  CONTEXT (user@host)                                                    ║
   # ╚══════════════════════════════════════════════════════════════════════════╝
-  typeset -g POWERLEVEL9K_CONTEXT_ROOT_TEMPLATE='%B%F{196}%n%f%b%F{240}@%f%F{208}%m%f'
-  typeset -g POWERLEVEL9K_CONTEXT_TEMPLATE='%F{39}%n%f%F{240}@%f%F{214}%m%f'
+  typeset -g POWERLEVEL9K_CONTEXT_ROOT_TEMPLATE='%B%F{196}%n%f%b%F{245}@%f%F{208}%m%f'
+  typeset -g POWERLEVEL9K_CONTEXT_TEMPLATE='%F{39}%n%f%F{245}@%f%F{214}%m%f'
   typeset -g POWERLEVEL9K_CONTEXT_{DEFAULT,SUDO}_CONTENT_EXPANSION=
   typeset -g POWERLEVEL9K_ALWAYS_SHOW_CONTEXT=false
   typeset -g POWERLEVEL9K_CONTEXT_{ROOT_,}TEMPLATE_FOREGROUND=
   typeset -g POWERLEVEL9K_CONTEXT_SHOW_ON_COMMAND='ssh|sudo|su|kubectl|helm|terraform|ansible*|vagrant'
-  typeset -g POWERLEVEL9K_CONTEXT_PREFIX='%F{240}as %f'
+  typeset -g POWERLEVEL9K_CONTEXT_BACKGROUND=236
 
   # ╔══════════════════════════════════════════════════════════════════════════╗
   # ║  DIRECTORY                                                              ║
   # ╚══════════════════════════════════════════════════════════════════════════╝
-  typeset -g POWERLEVEL9K_DIR_FOREGROUND=39
+  typeset -g POWERLEVEL9K_DIR_BACKGROUND=24
+  typeset -g POWERLEVEL9K_DIR_FOREGROUND=117
   typeset -g POWERLEVEL9K_SHORTEN_STRATEGY=truncate_to_unique
   typeset -g POWERLEVEL9K_SHORTEN_DELIMITER='…'
-  typeset -g POWERLEVEL9K_DIR_SHORTENED_FOREGROUND=103
-  typeset -g POWERLEVEL9K_DIR_ANCHOR_FOREGROUND=39
+  typeset -g POWERLEVEL9K_DIR_SHORTENED_FOREGROUND=74
+  typeset -g POWERLEVEL9K_DIR_ANCHOR_FOREGROUND=195
   typeset -g POWERLEVEL9K_DIR_ANCHOR_BOLD=true
 
   local anchor_files=(
@@ -125,32 +136,43 @@
   typeset -g POWERLEVEL9K_DIR_MIN_COMMAND_COLUMNS_PCT=50
   typeset -g POWERLEVEL9K_DIR_HYPERLINK=false
   typeset -g POWERLEVEL9K_DIR_SHOW_WRITABLE=v3
-  typeset -g POWERLEVEL9K_DIR_PREFIX='%F{240}in %f'
 
-  # Special directory colours
+  # Special directory colours (adjusted for dark blue bg=24)
   typeset -g POWERLEVEL9K_DIR_NOT_WRITABLE_FOREGROUND=196
   typeset -g POWERLEVEL9K_DIR_NOT_WRITABLE_VISUAL_IDENTIFIER_EXPANSION='󰌾'
-  typeset -g POWERLEVEL9K_DIR_ETC_FOREGROUND=208
-  typeset -g POWERLEVEL9K_DIR_HOME_FOREGROUND=39
-  typeset -g POWERLEVEL9K_DIR_HOME_SUBFOLDER_FOREGROUND=39
-  typeset -g POWERLEVEL9K_DIR_DEFAULT_FOREGROUND=31
+  typeset -g POWERLEVEL9K_DIR_NOT_WRITABLE_BACKGROUND=52
+  typeset -g POWERLEVEL9K_DIR_ETC_FOREGROUND=214
+  typeset -g POWERLEVEL9K_DIR_ETC_BACKGROUND=24
+  typeset -g POWERLEVEL9K_DIR_HOME_FOREGROUND=117
+  typeset -g POWERLEVEL9K_DIR_HOME_BACKGROUND=24
+  typeset -g POWERLEVEL9K_DIR_HOME_SUBFOLDER_FOREGROUND=117
+  typeset -g POWERLEVEL9K_DIR_HOME_SUBFOLDER_BACKGROUND=24
+  typeset -g POWERLEVEL9K_DIR_DEFAULT_FOREGROUND=117
+  typeset -g POWERLEVEL9K_DIR_DEFAULT_BACKGROUND=24
 
   # ╔══════════════════════════════════════════════════════════════════════════╗
   # ║  GIT (vcs)                                                              ║
   # ╚══════════════════════════════════════════════════════════════════════════╝
-  typeset -g POWERLEVEL9K_VCS_PREFIX='%F{240}on %f'
   typeset -g POWERLEVEL9K_GIT_BACKEND=gitstatusd
   typeset -g POWERLEVEL9K_GITSTATUSD_TIMEOUT=3
 
-  typeset -g POWERLEVEL9K_VCS_CLEAN_FOREGROUND=76
-  typeset -g POWERLEVEL9K_VCS_MODIFIED_FOREGROUND=178
+  # Block backgrounds per git state
+  typeset -g POWERLEVEL9K_VCS_CLEAN_BACKGROUND=22
+  typeset -g POWERLEVEL9K_VCS_MODIFIED_BACKGROUND=130
+  typeset -g POWERLEVEL9K_VCS_UNTRACKED_BACKGROUND=236
+  typeset -g POWERLEVEL9K_VCS_CONFLICTED_BACKGROUND=52
+  typeset -g POWERLEVEL9K_VCS_LOADING_BACKGROUND=237
+
+  # Foregrounds (light for contrast on dark backgrounds)
+  typeset -g POWERLEVEL9K_VCS_CLEAN_FOREGROUND=156
+  typeset -g POWERLEVEL9K_VCS_MODIFIED_FOREGROUND=228
   typeset -g POWERLEVEL9K_VCS_UNTRACKED_FOREGROUND=214
   typeset -g POWERLEVEL9K_VCS_CONFLICTED_FOREGROUND=196
   typeset -g POWERLEVEL9K_VCS_LOADING_FOREGROUND=244
 
   typeset -g POWERLEVEL9K_VCS_UNTRACKED_ICON='?'
   typeset -g POWERLEVEL9K_VCS_{STAGED,UNSTAGED,UNTRACKED,CONFLICTED,COMMITS_AHEAD,COMMITS_BEHIND}_MAX_NUM=-1
-  typeset -g POWERLEVEL9K_VCS_VISUAL_IDENTIFIER_COLOR=76
+  typeset -g POWERLEVEL9K_VCS_VISUAL_IDENTIFIER_COLOR=156
   typeset -g POWERLEVEL9K_VCS_LOADING_VISUAL_IDENTIFIER_COLOR=244
 
   typeset -g POWERLEVEL9K_VCS_BRANCH_ICON=' '
@@ -180,7 +202,6 @@
   typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_PRECISION=1
   typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_FOREGROUND=248
   typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_FORMAT='d h m s'
-  typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_PREFIX='%F{240}took %f'
   typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_VISUAL_IDENTIFIER_EXPANSION='󱦟'
 
   # ╔══════════════════════════════════════════════════════════════════════════╗
@@ -196,36 +217,35 @@
 
   # --- Node.js ---
   typeset -g POWERLEVEL9K_NODE_VERSION_FOREGROUND=70
+  typeset -g POWERLEVEL9K_NODE_VERSION_BACKGROUND=236
   typeset -g POWERLEVEL9K_NODE_VERSION_PROJECT_ONLY=true
   typeset -g POWERLEVEL9K_NODE_VERSION_VISUAL_IDENTIFIER_EXPANSION='󰎙'
-  typeset -g POWERLEVEL9K_NODE_VERSION_PREFIX='%F{240}via %f'
 
   # --- Go ---
   typeset -g POWERLEVEL9K_GO_VERSION_FOREGROUND=81
+  typeset -g POWERLEVEL9K_GO_VERSION_BACKGROUND=236
   typeset -g POWERLEVEL9K_GO_VERSION_PROJECT_ONLY=true
   typeset -g POWERLEVEL9K_GO_VERSION_VISUAL_IDENTIFIER_EXPANSION='󰟓'
-  typeset -g POWERLEVEL9K_GO_VERSION_PREFIX='%F{240}via %f'
 
   # --- Rust ---
   typeset -g POWERLEVEL9K_RUST_VERSION_FOREGROUND=208
+  typeset -g POWERLEVEL9K_RUST_VERSION_BACKGROUND=236
   typeset -g POWERLEVEL9K_RUST_VERSION_PROJECT_ONLY=true
   typeset -g POWERLEVEL9K_RUST_VERSION_VISUAL_IDENTIFIER_EXPANSION='🦀'
-  typeset -g POWERLEVEL9K_RUST_VERSION_PREFIX='%F{240}via %f'
 
   # --- Python ---
   typeset -g POWERLEVEL9K_PYTHON_VERSION_FOREGROUND=221
+  typeset -g POWERLEVEL9K_PYTHON_VERSION_BACKGROUND=236
   typeset -g POWERLEVEL9K_PYTHON_VERSION_PROJECT_ONLY=true
   typeset -g POWERLEVEL9K_PYTHON_VERSION_VISUAL_IDENTIFIER_EXPANSION='󰌠'
-  typeset -g POWERLEVEL9K_PYTHON_VERSION_PREFIX='%F{240}via %f'
 
   # --- Python virtualenv ---
   typeset -g POWERLEVEL9K_VIRTUALENV_FOREGROUND=37
+  typeset -g POWERLEVEL9K_VIRTUALENV_BACKGROUND=236
   typeset -g POWERLEVEL9K_VIRTUALENV_SHOW_PYTHON_VERSION=false
   typeset -g POWERLEVEL9K_VIRTUALENV_SHOW_WITH_PYENV=false
   typeset -g POWERLEVEL9K_VIRTUALENV_{LEFT,RIGHT}_DELIMITER=
   typeset -g POWERLEVEL9K_VIRTUALENV_VISUAL_IDENTIFIER_EXPANSION='󰸥'
-  typeset -g POWERLEVEL9K_VIRTUALENV_PREFIX='%F{240}(%f'
-  typeset -g POWERLEVEL9K_VIRTUALENV_SUFFIX='%F{240})%f'
 
   # ╔══════════════════════════════════════════════════════════════════════════╗
   # ║  AWS                                                                    ║
@@ -408,12 +428,12 @@
   typeset -g POWERLEVEL9K_TIME_FORMAT='{% raw %}%D{%H:%M:%S}{% endraw %}'
   typeset -g POWERLEVEL9K_TIME_FOREGROUND=66
   typeset -g POWERLEVEL9K_TIME_UPDATE_ON_COMMAND=true
-  typeset -g POWERLEVEL9K_TIME_VISUAL_IDENTIFIER_EXPANSION='󰥔 '
+  typeset -g POWERLEVEL9K_TIME_VISUAL_IDENTIFIER_EXPANSION='󰥔'
 
   # ╔══════════════════════════════════════════════════════════════════════════╗
   # ║  PROMPT CHAR + MULTILINE FRAME                                          ║
   # ╚══════════════════════════════════════════════════════════════════════════╝
-  typeset -g POWERLEVEL9K_MULTILINE_FIRST_PROMPT_PREFIX='%F{240}╭─%f'
+  typeset -g POWERLEVEL9K_MULTILINE_FIRST_PROMPT_PREFIX='%F{240}╭%f'
   typeset -g POWERLEVEL9K_MULTILINE_NEWLINE_PROMPT_PREFIX='%F{240}│ %f'
   typeset -g POWERLEVEL9K_MULTILINE_LAST_PROMPT_PREFIX='%F{240}╰─%f'
   typeset -g POWERLEVEL9K_MULTILINE_FIRST_PROMPT_SUFFIX='%F{240}─╮%f'
