@@ -174,106 +174,103 @@ alias vpnip='_vpn_ip'  # fonction dans functions.zsh
 alias myid='_myid'   # fonction définie ci-dessous pour lisibilité
 
 _myid() {
-  local sep='━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+  local sep='━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
   local c_title='\033[1;36m'   # cyan bold
   local c_key='\033[0;33m'     # yellow
-  local c_val='\033[0;37m'     # white
   local c_sep='\033[0;90m'     # grey
   local c_rst='\033[0m'
 
-  _line() { printf "  ${c_key}%-16s${c_rst} %s\n" "$1" "$2"; }
+  # icon + label (padded ASCII) + value
+  _line() { printf "  %b  ${c_key}%-12s${c_rst} %s\n" "$1" "$2" "$3"; }
   _section() { printf "\n${c_sep}%s${c_rst}\n${c_title}  %s${c_rst}\n${c_sep}%s${c_rst}\n" "$sep" "$1" "$sep"; }
 
   # ── SYSTEM ──
   _section "🖥️  SYSTEM"
-  _line "👤  User"         "$(whoami)"
-  _line "🖥️  Hostname"     "$(hostname -s 2>/dev/null || hostname)"
+  _line "👤" "User"         "$(whoami)"
+  _line "🖥️ " "Hostname"    "$(hostname -s 2>/dev/null || hostname)"
 
 {% if ansible_os_family | default('') == 'Darwin' %}
-  _line "🍎  OS"            "$(sw_vers -productName) $(sw_vers -productVersion) ($(sw_vers -buildVersion))"
-  _line "💻  Chip"          "$(sysctl -n machdep.cpu.brand_string 2>/dev/null)"
-  _line "🧠  RAM"           "$(( $(sysctl -n hw.memsize) / 1024 / 1024 / 1024 )) GB"
-  _line "💾  Disk"          "$(df -h / | awk 'NR==2 {print $4" free / "$2" total"}')"
+  _line "🍎" "OS"           "$(sw_vers -productName) $(sw_vers -productVersion) ($(sw_vers -buildVersion))"
+  _line "💻" "Chip"         "$(sysctl -n machdep.cpu.brand_string 2>/dev/null)"
+  _line "🧠" "RAM"          "$(( $(sysctl -n hw.memsize) / 1024 / 1024 / 1024 )) GB"
+  _line "💾" "Disk"         "$(df -h / | awk 'NR==2 {print $4" free / "$2" total"}')"
   local _batt
   _batt="$(pmset -g batt 2>/dev/null | grep -oE '[0-9]+%' | head -1)"
-  [[ -n "$_batt" ]] && _line "🔋  Battery"       "${_batt} $(pmset -g batt | grep -oE 'charging|discharging|charged' | head -1)"
-  _line "⏱️  Uptime"        "$(uptime | sed 's/.*up //' | sed 's/,.*//')"
-  _line "⚙️  Load"          "$(sysctl -n vm.loadavg 2>/dev/null | awk '{print $2, $3, $4}')"
-  _line "🖥️  Resolution"    "$(system_profiler SPDisplaysDataType 2>/dev/null | grep Resolution | awk -F: '{print $2}' | xargs)"
+  [[ -n "$_batt" ]] && _line "🔋" "Battery"    "${_batt} $(pmset -g batt | grep -oE 'charging|discharging|charged' | head -1)"
+  _line "⏱️ " "Uptime"      "$(uptime | sed 's/.*up //' | sed 's/,.*//')"
+  _line "⚙️ " "Load"        "$(sysctl -n vm.loadavg 2>/dev/null | awk '{print $2, $3, $4}')"
+  _line "🖥️ " "Resolution"  "$(system_profiler SPDisplaysDataType 2>/dev/null | grep Resolution | awk -F: '{print $2}' | xargs)"
 {% else %}
-  _line "🐧  OS"            "$(. /etc/os-release 2>/dev/null && echo "$PRETTY_NAME" || uname -sr)"
-  _line "💻  CPU"           "$(lscpu 2>/dev/null | awk -F: '/Model name/ {gsub(/^ +/,"",$2); print $2; exit}')"
-  _line "🧠  RAM"           "$(free -h 2>/dev/null | awk '/Mem:/ {print $3" used / "$2" total"}')"
-  _line "💾  Disk"          "$(df -h / | awk 'NR==2 {print $4" free / "$2" total"}')"
-  _line "⏱️  Uptime"        "$(uptime -p 2>/dev/null || uptime | sed 's/.*up //' | sed 's/,.*//')"
-  _line "⚙️  Load"          "$(awk '{print $1, $2, $3}' /proc/loadavg 2>/dev/null)"
+  _line "🐧" "OS"           "$(. /etc/os-release 2>/dev/null && echo "$PRETTY_NAME" || uname -sr)"
+  _line "💻" "CPU"          "$(lscpu 2>/dev/null | awk -F: '/Model name/ {gsub(/^ +/,"",$2); print $2; exit}')"
+  _line "🧠" "RAM"          "$(free -h 2>/dev/null | awk '/Mem:/ {print $3" used / "$2" total"}')"
+  _line "💾" "Disk"         "$(df -h / | awk 'NR==2 {print $4" free / "$2" total"}')"
+  _line "⏱️ " "Uptime"      "$(uptime -p 2>/dev/null || uptime | sed 's/.*up //' | sed 's/,.*//')"
+  _line "⚙️ " "Load"        "$(awk '{print $1, $2, $3}' /proc/loadavg 2>/dev/null)"
 {% endif %}
-  _line "🔄  Processes"     "$(ps aux 2>/dev/null | wc -l | xargs) running"
+  _line "🔄" "Processes"    "$(command ps aux 2>/dev/null | wc -l | xargs) running"
 
   # ── NETWORK ──
-  _section "🌐  NETWORK"
+  _section "🌐 NETWORK"
 
 {% if ansible_os_family | default('') == 'Darwin' %}
-  local _wifi
-  _wifi="$(/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I 2>/dev/null | awk '/ SSID/ {print $NF}')"
-  [[ -n "$_wifi" ]] && _line "📡  WiFi"          "$_wifi"
-  local _ifaces=(en0 en1 en2 en3 en4 en5)
-  for _if in "${_ifaces[@]}"; do
-    local _addr
-    _addr="$(ifconfig "$_if" 2>/dev/null | awk '/inet / {print $2}')"
-    [[ -n "$_addr" ]] && _line "🔒  $_if"          "$_addr"
+  local _wifi _addr _if _vpns
+  _wifi="$(networksetup -getairportnetwork en0 2>/dev/null | sed 's/Current Wi-Fi Network: //' || echo '')"
+  [[ -n "$_wifi" && "$_wifi" != *"not associated"* ]] && _line "📡" "WiFi"        "$_wifi"
+  for _if in en0 en1 en2 en3 en4 en5; do
+    _addr="$(ifconfig "$_if" 2>/dev/null | awk '/inet / {print $2; exit}')"
+    [[ -n "$_addr" ]] && _line "🔒" "$_if"        "$_addr"
   done
-  _line "🌐  Gateway"       "$(netstat -rn | awk '$1=="default" && $2~/^[0-9]+\./{print $2; exit}')"
-  _line "🔍  DNS"           "$(scutil --dns 2>/dev/null | awk '/nameserver\[/ {print $3}' | sort -u | tr '\n' ' ')"
+  _line "🌐" "Gateway"      "$(netstat -rn | awk '$1=="default" && $2~/^[0-9]+\./{print $2; exit}')"
+  _line "🔍" "DNS"          "$(scutil --dns 2>/dev/null | awk '/nameserver\[/ {print $3}' | sort -u | tr '\n' ' ')"
   # VPN interfaces (utun*, ipsec*, ppp*, tun*, wg*)
-  local _vpns
   _vpns="$(ifconfig 2>/dev/null | awk '/^(utun|ipsec|ppp|tun|wg)[0-9]*:/{iface=$1; sub(/:$/,"",iface)} /inet / && iface {print $2" ("iface")"; iface=""}' | tr '\n' ', ')"
-  [[ -n "$_vpns" ]] && _line "🔑  VPN"            "${_vpns%, }"
+  [[ -n "$_vpns" ]] && _line "🔑" "VPN"         "${_vpns%, }"
   # Tailscale
   command -v tailscale &>/dev/null && {
     local _tsip; _tsip="$(tailscale ip -4 2>/dev/null)"
-    [[ -n "$_tsip" ]] && _line "🔑  Tailscale"     "$_tsip"
+    [[ -n "$_tsip" ]] && _line "🔑" "Tailscale"  "$_tsip"
   }
 {% else %}
-  local _default_if
+  local _default_if _vpns
   _default_if="$(ip route 2>/dev/null | awk '/default/ {print $5; exit}')"
-  [[ -n "$_default_if" ]] && _line "📡  Interface"     "$_default_if"
-  ip -4 addr 2>/dev/null | awk '/inet / && !/127\.0\.0\.1/ {
-    split($2,a,"/"); split($NF,b," "); printf "  \033[0;33m%-16s\033[0m %s (%s)\n", "🔒  IP", a[1], $NF
-  }'
-  _line "🌐  Gateway"       "$(ip route 2>/dev/null | awk '/default/ {print $3; exit}')"
-  _line "🔍  DNS"           "$(resolvectl dns 2>/dev/null | awk '{for(i=2;i<=NF;i++) printf $i" "; print ""}' | head -1)"
+  [[ -n "$_default_if" ]] && _line "📡" "Interface"  "$_default_if"
+  local _lip
+  while IFS= read -r _lip; do
+    [[ -n "$_lip" ]] && _line "🔒" "IP"          "$_lip"
+  done < <(ip -4 addr 2>/dev/null | awk '/inet / && !/127\.0\.0\.1/ { split($2,a,"/"); print a[1]" ("$NF")" }')
+  _line "🌐" "Gateway"      "$(ip route 2>/dev/null | awk '/default/ {print $3; exit}')"
+  _line "🔍" "DNS"          "$(resolvectl dns 2>/dev/null | awk '{for(i=2;i<=NF;i++) printf $i" "; print ""}' | head -1)"
   # VPN interfaces (tun*, wg*, nordlynx, tailscale*)
-  local _vpns
   _vpns="$(ip -o addr 2>/dev/null | awk '/tun[0-9]|wg[0-9]|nordlynx|tailscale[0-9]|ppp[0-9]/ {split($4,a,"/"); print a[1]" ("$2")"}' | tr '\n' ', ')"
-  [[ -n "$_vpns" ]] && _line "🔑  VPN"            "${_vpns%, }"
+  [[ -n "$_vpns" ]] && _line "🔑" "VPN"         "${_vpns%, }"
   command -v tailscale &>/dev/null && {
     local _tsip; _tsip="$(tailscale ip -4 2>/dev/null)"
-    [[ -n "$_tsip" ]] && _line "🔑  Tailscale"     "$_tsip"
+    [[ -n "$_tsip" ]] && _line "🔑" "Tailscale"  "$_tsip"
   }
 {% endif %}
-  _line "🌍  Public IP"     "$(curl -s --connect-timeout 3 ifconfig.me 2>/dev/null || echo 'unavailable')"
-  _line "📍  Location"      "$(curl -s --connect-timeout 3 ipinfo.io 2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('city','')+', '+d.get('region','')+', '+d.get('country',''))" 2>/dev/null || echo 'unavailable')"
+  _line "🌍" "Public IP"    "$(curl -s --connect-timeout 3 ifconfig.me 2>/dev/null || echo 'unavailable')"
+  _line "📍" "Location"     "$(curl -s --connect-timeout 3 ipinfo.io 2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('city','')+', '+d.get('region','')+', '+d.get('country',''))" 2>/dev/null || echo 'unavailable')"
 
   # ── DEV TOOLS ──
   _section "🛠️  DEV"
-  command -v python3    &>/dev/null && _line "🐍  Python"       "$(python3 --version 2>&1 | awk '{print $2}')"
-  command -v node       &>/dev/null && _line "📦  Node"         "$(node --version 2>/dev/null)"
-  command -v go         &>/dev/null && _line "🔵  Go"           "$(go version 2>/dev/null | awk '{print $3}')"
-  command -v rustc      &>/dev/null && _line "🦀  Rust"         "$(rustc --version 2>/dev/null | awk '{print $2}')"
-  command -v docker     &>/dev/null && _line "🐳  Docker"       "$(docker --version 2>/dev/null | awk '{print $3}' | tr -d ',')"
-  command -v kubectl    &>/dev/null && _line "☸️   Kubectl"      "$(kubectl version --client -o json 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin)['clientVersion']['gitVersion'])" 2>/dev/null)"
-  command -v terraform  &>/dev/null && _line "🏗️  Terraform"    "$(terraform --version 2>/dev/null | head -1 | awk '{print $2}')"
-  command -v ansible    &>/dev/null && _line "📕  Ansible"      "$(ansible --version 2>/dev/null | head -1 | awk '{print $NF}' | tr -d '[]')"
-  _line "🌿  Git"           "$(git --version 2>/dev/null | awk '{print $3}')"
-  _line "👤  Git User"      "$(git config --global user.name 2>/dev/null) <$(git config --global user.email 2>/dev/null)>"
+  command -v python3    &>/dev/null && _line "🐍" "Python"      "$(python3 --version 2>&1 | awk '{print $2}')"
+  command -v node       &>/dev/null && _line "📦" "Node"        "$(node --version 2>/dev/null)"
+  command -v go         &>/dev/null && _line "🔵" "Go"          "$(go version 2>/dev/null | awk '{print $3}')"
+  command -v rustc      &>/dev/null && _line "🦀" "Rust"        "$(rustc --version 2>/dev/null | awk '{print $2}')"
+  command -v docker     &>/dev/null && _line "🐳" "Docker"      "$(docker --version 2>/dev/null | awk '{print $3}' | tr -d ',')"
+  command -v kubectl    &>/dev/null && _line "☸️ " "Kubectl"     "$(kubectl version --client -o json 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin)['clientVersion']['gitVersion'])" 2>/dev/null)"
+  command -v terraform  &>/dev/null && _line "🏗️ " "Terraform"   "$(terraform --version 2>/dev/null | head -1 | awk '{print $2}')"
+  command -v ansible    &>/dev/null && _line "📕" "Ansible"     "$(ansible --version 2>/dev/null | head -1 | awk '{print $NF}' | tr -d '[]')"
+  _line "🌿" "Git"          "$(git --version 2>/dev/null | awk '{print $3}')"
+  _line "👤" "Git User"     "$(git config --global user.name 2>/dev/null) <$(git config --global user.email 2>/dev/null)>"
 
   # ── DATE & TIME ──
-  _section "📅  DATE & TIME"
-  _line "📅  Date"          "$(LANG=C date '+%A %d %B %Y')"
-  _line "🕐  Time"          "$(date '+%H:%M:%S')"
-  _line "🌍  Timezone"      "$(date '+%Z %z')"
-  _line "📆  Week"          "$(date '+%V')"
+  _section "📅 DATE & TIME"
+  _line "📅" "Date"         "$(LANG=C date '+%A %d %B %Y')"
+  _line "🕐" "Time"         "$(date '+%H:%M:%S')"
+  _line "🌍" "Timezone"     "$(date '+%Z %z')"
+  _line "📆" "Week"         "$(date '+%V')"
 
   echo ""
 }

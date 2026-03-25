@@ -39,23 +39,21 @@
   # ║  RIGHT PROMPT                                                           ║
   # ╚══════════════════════════════════════════════════════════════════════════╝
   typeset -g POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(
+    # ── Line 1 (aligned with dir/vcs) ──
     status
     command_execution_time
     background_jobs
-    # -- Cloud / infra --
+    # -- Cloud / infra (contextual, only shown on relevant commands) --
     aws
     terraform
     kubecontext
-    # -- System vitals --
-    load
-    ram
+    # -- System vitals (disk only on warning) --
     disk_usage
-    # -- Network (local + VPN) --
+    newline
+    # ── Line 2 (aligned with prompt_char) ──
     ip
     my_vpn_ip               # custom segment: VPN IP
-    # -- Misc --
     time
-    newline
   )
 
   # ╔══════════════════════════════════════════════════════════════════════════╗
@@ -81,10 +79,10 @@
   # ╚══════════════════════════════════════════════════════════════════════════╝
 {% if ansible_os_family | default('') == 'Darwin' %}
   typeset -g POWERLEVEL9K_OS_ICON_FOREGROUND=255          # white Apple icon
-  typeset -g POWERLEVEL9K_OS_ICON_CONTENT_EXPANSION='󰀵'
+  typeset -g POWERLEVEL9K_OS_ICON_CONTENT_EXPANSION=' 󰀵'
 {% elif ansible_os_family | default('') == 'Debian' %}
   typeset -g POWERLEVEL9K_OS_ICON_FOREGROUND=196          # red Debian swirl
-  typeset -g POWERLEVEL9K_OS_ICON_CONTENT_EXPANSION='󰣚'
+  typeset -g POWERLEVEL9K_OS_ICON_CONTENT_EXPANSION=' 󰣚'
 {% else %}
   typeset -g POWERLEVEL9K_OS_ICON_FOREGROUND=212
 {% endif %}
@@ -283,14 +281,14 @@
   # ║  SYSTEM VITALS                                                          ║
   # ╚══════════════════════════════════════════════════════════════════════════╝
 
-  # --- CPU load ---
+  # --- CPU load (add 'load' to RIGHT_PROMPT_ELEMENTS to enable) ---
   typeset -g POWERLEVEL9K_LOAD_WHICH=1
   typeset -g POWERLEVEL9K_LOAD_NORMAL_FOREGROUND=70
   typeset -g POWERLEVEL9K_LOAD_WARNING_FOREGROUND=178
   typeset -g POWERLEVEL9K_LOAD_CRITICAL_FOREGROUND=196
   typeset -g POWERLEVEL9K_LOAD_VISUAL_IDENTIFIER_EXPANSION='󰾅'
 
-  # --- RAM ---
+  # --- RAM (add 'ram' to RIGHT_PROMPT_ELEMENTS to enable) ---
   typeset -g POWERLEVEL9K_RAM_FOREGROUND=66
   typeset -g POWERLEVEL9K_RAM_VISUAL_IDENTIFIER_EXPANSION='󰍛'
 
@@ -308,11 +306,17 @@
   typeset -g POWERLEVEL9K_IP_FOREGROUND=38
   typeset -g POWERLEVEL9K_IP_VISUAL_IDENTIFIER_EXPANSION='󰩟'
 {% if ansible_os_family | default('') == 'Darwin' %}
-  # macOS: match common physical interfaces (Wi-Fi = en0, Ethernet = en1-en9)
-  typeset -g POWERLEVEL9K_IP_INTERFACE='{{ p10k_ip_interface | default("en0") }}'
+  # macOS: hardcode en0 (Wi-Fi) — always shows LAN IP even when VPN is active
+  typeset -g POWERLEVEL9K_IP_INTERFACE='en0'
 {% else %}
-  # Linux: Ansible-detected default interface
-  typeset -g POWERLEVEL9K_IP_INTERFACE='{{ p10k_ip_interface | default("eth0") }}'
+  # Linux: match physical/bridge interfaces via regex, skip VPN tunnels
+  # Ansible-detected default: {{ p10k_ip_interface | default('eth0') }}
+{% set _iface = p10k_ip_interface | default('eth0') %}
+{% if _iface is match('^(tun|wg|nordlynx|tailscale|ppp)') %}
+  typeset -g POWERLEVEL9K_IP_INTERFACE='(e|br|enp|ens|wl).*'
+{% else %}
+  typeset -g POWERLEVEL9K_IP_INTERFACE='{{ _iface }}'
+{% endif %}
 {% endif %}
   typeset -g POWERLEVEL9K_IP_SHOW_ALL_ADDRESSES=false
   typeset -g POWERLEVEL9K_IP_CONTENT_EXPANSION='${P9K_IP_IP} %F{240}(${P9K_IP_INTERFACE})%f'
@@ -404,7 +408,7 @@
   typeset -g POWERLEVEL9K_TIME_FORMAT='{% raw %}%D{%H:%M:%S}{% endraw %}'
   typeset -g POWERLEVEL9K_TIME_FOREGROUND=66
   typeset -g POWERLEVEL9K_TIME_UPDATE_ON_COMMAND=true
-  typeset -g POWERLEVEL9K_TIME_VISUAL_IDENTIFIER_EXPANSION='󰥔'
+  typeset -g POWERLEVEL9K_TIME_VISUAL_IDENTIFIER_EXPANSION='󰥔 '
 
   # ╔══════════════════════════════════════════════════════════════════════════╗
   # ║  PROMPT CHAR + MULTILINE FRAME                                          ║
