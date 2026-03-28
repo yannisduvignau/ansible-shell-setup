@@ -20,7 +20,7 @@
       - fzf
       - ripgrep
       - htop
-      - neofetch
+      - fastfetch
       - python3
       - python3-pip
       - jq
@@ -42,7 +42,7 @@
       - fzf
       - ripgrep
       - htop
-      - neofetch
+      - fastfetch
       - python3
       - jq
     state: present
